@@ -27,7 +27,7 @@ class ChatResponse(BaseModel):
 
 @app.get("/")
 def root():
-    return {"message": "API do Chatbot esta no ar"}
+    return {"message": "API do Chatbot está no ar 🚀"}
 
 
 @app.post("/chat", response_model=ChatResponse)
