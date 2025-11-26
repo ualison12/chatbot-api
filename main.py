@@ -1,36 +1,34 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from openai import OpenAI
+import os
 
-from chatbot_engine import Chatbot
+# Pegando a chave da OpenAI do ambiente
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-app = FastAPI(title="Chatbot API")
+app = FastAPI()
 
+# Liberar CORS para qualquer site seu
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-bot = Chatbot(nome="UaliBot")
-
-
-class ChatRequest(BaseModel):
+# Modelo da mensagem recebida do front-end
+class Message(BaseModel):
     message: str
 
+@app.post("/chat")
+async def chat(data: Message):
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        input=data.message
+    )
 
-class ChatResponse(BaseModel):
-    reply: str
+    return {
+        "reply": response.output_text
+    }
 
-
-@app.get("/")
-def root():
-    return {"message": "API do Chatbot está no ar 🚀"}
-
-
-@app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest):
-    resposta = bot.responder(request.message)
-    return ChatResponse(reply=resposta)
